@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ppp",
+    "pcp",
+    "ppp"
+  ],
+  "key": {
+    "p": {
+      "item": "minecraft:paper"
+    },
+    "c": {
+      "item": "mapsandframes:unused_map_scale_3"
+    }
+  },
+  "result": {
+    "item": "mapsandframes:unused_map_scale_4",
+    "count": 1
+  }
+}

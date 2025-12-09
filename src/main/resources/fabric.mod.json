@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "mapsandframes",
+  "version": "${version}",
+
+  "name": "MapsAndFrames",
+  "description": "This mod adds maps of different scales and item frames.",
+  "authors": [
+    "Comodo811"
+  ],
+
+  "license": "MIT",
+  "icon": "assets/mapsandframes/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "stationapi:event_bus": [
+      "io.github.comodo811.mapsandframes.events.init.InitListener",
+      "io.github.comodo811.mapsandframes.events.init.ItemListener",
+      "io.github.comodo811.mapsandframes.events.init.EntityListener"
+    ],
+    "stationapi:event_bus_client": [
+      "io.github.comodo811.mapsandframes.events.client.TextureListener",
+      "io.github.comodo811.mapsandframes.events.client.EntityRendererListener"
+    ],
+    "stationapi:event_bus_server": [
+    ],
+    "bhcreative:event_bus": [
+      "io.github.comodo811.mapsandframes.events.CreativeListener"
+    ]
+  },
+  "mixins": [
+    "mapsandframes.mixins.json"
+  ],
+
+  "depends": {
+    "minecraft": "1.0.0-beta.7.3"
+  }
+}

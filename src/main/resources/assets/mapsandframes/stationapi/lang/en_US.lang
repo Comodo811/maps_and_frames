@@ -1,0 +1,10 @@
+item.@.unused_map_scale_0.name=Unused Map Scale 0
+item.@.unused_map_scale_1.name=Unused Map Scale 1
+item.@.unused_map_scale_2.name=Unused Map Scale 2
+item.@.unused_map_scale_3.name=Unused Map Scale 3
+item.@.unused_map_scale_4.name=Unused Map Scale 4
+item.@.item_frame_item.name=Item Frame
+
+entity.@.item_frame.name=Item Frame
+
+tab.@.mapsandframes_tab.name=Maps And Frames

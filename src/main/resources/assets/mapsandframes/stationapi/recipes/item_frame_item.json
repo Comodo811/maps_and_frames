@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "sss",
+    "sls",
+    "sss"
+  ],
+  "key": {
+    "s": {
+      "item": "minecraft:stick"
+    },
+    "l": {
+      "item": "minecraft:leather"
+    }
+  },
+  "result": {
+    "item": "mapsandframes:item_frame_item",
+    "count": 1
+  }
+}
