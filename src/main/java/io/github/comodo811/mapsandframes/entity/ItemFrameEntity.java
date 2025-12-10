@@ -29,6 +29,7 @@ public class ItemFrameEntity extends Entity {
         this.facing = 0;
         this.standingEyeHeight = 0.0F;
         this.setBoundingBoxSpacing(0.5F, 0.5F);
+        this.renderDistanceMultiplier = 2.0F;
     }
 
     public ItemFrameEntity(World world, int x, int y, int z, int facing) {
@@ -40,13 +41,13 @@ public class ItemFrameEntity extends Entity {
         this.setFacing(facing);
     }
 
+
     protected void initDataTracker() {}
 
     public void setFacing(int facing) {
         this.facing = facing;
         this.prevYaw = this.yaw = (float) (facing * 90);
 
-        // Human-readable variables for bounding box calculation
 
         float halfWidthX = (float) 10;
         float halfHeightY = (float) 8;
@@ -106,6 +107,8 @@ public class ItemFrameEntity extends Entity {
 
     public boolean canStayAttached() {
         if (!this.world.getEntityCollisions(this, this.boundingBox).isEmpty()) return false;
+        if (checkWaterCollisions()) return false;
+        //if (isTouchingLava()) return false; //somehow doesnt do anything
 
         // Human-readable variables
         int widthBlocks = width / 16;

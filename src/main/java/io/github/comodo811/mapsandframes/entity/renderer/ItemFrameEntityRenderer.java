@@ -34,8 +34,21 @@ import static org.lwjgl.opengl.GL11.glScalef;
 @Environment(EnvType.CLIENT)
 public class ItemFrameEntityRenderer extends EntityRenderer {
     private static NoMapIdRenderer sharedMapRenderer;
+    private static int itemFrameDisplayPixelSize = 10;
+    public boolean renderItemFlat = true;
+    // Setup for the Display Renders
+    Tessellator t = Tessellator.INSTANCE;
 
-    //public ItemFrameDisplays cfg = ItemFrameDisplays.LEATHER_HELMET;
+    float halfItemWidth         = (float) 5.0  * 0.0625F; // num(px) * width(px/F), 1 px = 0.0625F
+    float halfItemHeight        = (float) 5.0  * 0.0625F;
+    float itemDepthOffset       = (float) 0.25  * 0.0625F;
+
+
+    float halfBlockWidth        = (float) 2.5  * 0.0625F; // how many px shall the block be wide
+    float halfBlockHeight       = (float) 2.5  * 0.0625F; // how many px shall the block be high
+    float blockDepth            = (float) 6.0  * 0.0625F; // how many miny pixels should be visible in the depth
+    float blockDepthOffset      = (float) 0.25 * 0.0625F; // a bit further than the background of the item frame
+    float blockFrontDepthOffset = (2 * halfBlockWidth * blockDepth); // how far should the block protrude from the item frame
 
     private static NoMapIdRenderer getMapRenderer() {
         if (sharedMapRenderer == null) {
@@ -47,6 +60,7 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
 
     @Override
     public void render(Entity entity, double x, double y, double z, float yaw, float tickDelta) {
+        boolean renderItemFlat = true;
         if (!(entity instanceof ItemFrameEntity frame)) return;
 
         World world = entity.world;
@@ -102,12 +116,25 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
                     GL11.glPopMatrix();
                 }
             } else if (cfg != null) {
+                //Check for block types that should be displayed as items e.g. flowers
                 String displayType = cfg.getType();
 
-                if (displayType.equals("tool") || displayType.equals("item")) {
-                    String displayTexture = cfg.getTexturePath();
-                    this.bindTexture(displayTexture);
-                    drawItem();
+                if (displayType.equals("item")) {
+                    Item displayItem = ItemRegistry.INSTANCE.get(stack.itemId);
+                    Identifier id = ItemRegistry.INSTANCE.getId(displayItem);
+                    String baseKey = id.toString().toLowerCase();
+                    SpriteAtlasTexture atlas = StationRenderAPI.getBakedModelManager().getAtlas(Atlases.GAME_ATLAS_TEXTURE);
+
+                    if (baseKey.startsWith("minecraft")) {
+                        int textureId = stack.getTextureId(); // only needed for damage-dependent items
+                        Sprite sprite = atlas.getSprite(((CustomAtlasProvider) stack.getItem()).getAtlas().getTexture(textureId).getId());
+                        atlas.bindTexture();
+                        drawVanillaItem(sprite);
+                    } else {
+                        glScalef(itemFrameDisplayPixelSize * 0.0625F, itemFrameDisplayPixelSize * 0.0625F, itemFrameDisplayPixelSize * 0.0625F);
+                        atlas.bindTexture();
+                        drawModItem(stack, frame);
+                    }
                 }
 
             } else if (!(stack.getItem() instanceof BlockItemForm blockItemForm )) {
@@ -121,12 +148,12 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
                     int textureId = stack.getTextureId(); // only needed for damage-dependent items
                     Sprite sprite = atlas.getSprite(((CustomAtlasProvider) stack.getItem()).getAtlas().getTexture(textureId).getId());
                     atlas.bindTexture();
-                    drawItem2(sprite);
+                    drawVanillaItem(sprite);
                 } else {
 
-                    glScalef(10 * 0.0625F, 10 * 0.0625F, 10 * 0.0625F);
+                    glScalef(itemFrameDisplayPixelSize * 0.0625F, itemFrameDisplayPixelSize * 0.0625F, itemFrameDisplayPixelSize * 0.0625F);
                     atlas.bindTexture();
-                    drawItem3(stack, frame);
+                    drawModItem(stack, frame);
 
                 }
 
@@ -170,18 +197,6 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
         GL11.glPopMatrix();
     }
 
-    // Setup for the Display Renders
-    Tessellator t = Tessellator.INSTANCE;
-
-    float halfItemWidth         = (float) 5.0  * 0.0625F; // num(px) * width(px/F), 1 px = 0.0625F
-    float halfItemHeight        = (float) 5.0  * 0.0625F;
-    float itemDepthOffset       = (float) 0.5  * 0.0625F;
-
-    float halfBlockWidth        = (float) 2.5  * 0.0625F; // how many px shall the block be wide
-    float halfBlockHeight       = (float) 2.5  * 0.0625F; // how many px shall the block be high
-    float blockDepth            = (float) 6.0  * 0.0625F; // how many miny pixels should be visible in the depth
-    float blockDepthOffset      = (float) 0.25 * 0.0625F; // a bit further than the background of the item frame
-    float blockFrontDepthOffset = (2 * halfBlockWidth * blockDepth); // how far should the block protrude from the item frame
 
 
     private void drawItem() {
@@ -194,7 +209,7 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
         t.draw();
     }
 
-    private void drawItem2(Sprite sprite) {
+    private void drawVanillaItem(Sprite sprite) {
         Tessellator t = Tessellator.INSTANCE;
 
         float size = 10 * 0.0625f; // 10 px
@@ -217,25 +232,13 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
         t.draw();
     }
 
-    private void drawItem3(ItemStack stack, ItemFrameEntity entity) {
+    private void drawModItem(ItemStack stack, ItemFrameEntity entity) {
         Tessellator t = Tessellator.INSTANCE;
 
         t.startQuads();
         PublicRendererHolder.RENDERER.renderItem(null, stack, ModelTransformation.Mode.GUI, entity.world, entity.getBrightnessAtEyes(1), entity.id + ModelTransformation.Mode.GUI.ordinal());
         t.draw();
     }
-
-    private void renderFront2(double u0, double u1, double  v0, double v1) {
-        //FINISHED
-        t.startQuads();
-        t.normal(0, 0, -1);
-        t.vertex(-halfBlockWidth, -halfBlockHeight, (blockFrontDepthOffset-blockDepthOffset), u0, v1);
-        t.vertex( halfBlockWidth, -halfBlockHeight, (blockFrontDepthOffset-blockDepthOffset), u1, v1);
-        t.vertex( halfBlockWidth,  halfBlockHeight, (blockFrontDepthOffset-blockDepthOffset), u1, v0);
-        t.vertex(-halfBlockWidth,  halfBlockHeight, (blockFrontDepthOffset-blockDepthOffset), u0, v0);
-        t.draw();
-    }
-
 
     //Render Blocks
     //To Flip left/right side: Invert U
@@ -252,17 +255,6 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
         float u1 = sprite.getMaxU();
         float v0 = sprite.getMinV();
         float v1 = sprite.getMaxV();
-        //FINISHED
-        t.startQuads();
-        t.normal(-1, 0, 0);
-        t.vertex(-halfBlockWidth, -halfBlockHeight,   (blockFrontDepthOffset-blockDepthOffset), u1, v1);
-        t.vertex(-halfBlockWidth,  halfBlockHeight,   (blockFrontDepthOffset-blockDepthOffset), u1, v0);
-        t.vertex(-halfBlockWidth,  halfBlockHeight, -(blockFrontDepthOffset-blockDepthOffset), u0, v0);
-        t.vertex(-halfBlockWidth, -halfBlockHeight, -(blockFrontDepthOffset-blockDepthOffset), u0, v1);
-        t.draw();
-    }
-
-    private void renderLeftSide2(double u0, double u1, double  v0, double v1) {
         //FINISHED
         t.startQuads();
         t.normal(-1, 0, 0);
@@ -407,52 +399,7 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
         t.vertex( halfBlockWidth, -halfBlockHeight, -(blockFrontDepthOffset-blockDepthOffset), u0, v1);
         t.draw();
     }
-/*
-    private void renderLeftRightSide() {
-        //renderLeftSide();
-        renderRightSide();
-    }
 
-    private void renderHorizontalSides() {
-        //renderFront();
-        renderLeftRightSide();
-    }
-
-    private void renderFrontBack() {
-        //renderFront();
-        renderBack();
-    }
-
-    private void renderVerticalSides(int facing) {
-        renderTop(facing);
-        renderBottom(facing);
-    }
-
-    private void renderLeftRightBack() {
-        renderLeftRightSide();
-        renderBack();
-    }
-
-    private void renderHorizontalBottom(int facing) {
-        renderHorizontalSides();
-        renderBottom(facing);
-    }
-
-    private void renderHorizontalTop(int facing) {
-        renderHorizontalSides();
-        renderTop(facing);
-    }
-
-    private void renderFullBlock(int facing) {
-        renderHorizontalSides();
-        renderVerticalSides(facing);
-    }
-
-    private void renderAllBlock(int facing) {
-        renderFullBlock(facing);
-        renderBack();
-    }
-*/
     private void draw3DFrame() {
         /*
             An Item frame is 12x12 px, 0.5F was used for the paintings but these were 16x16 px
