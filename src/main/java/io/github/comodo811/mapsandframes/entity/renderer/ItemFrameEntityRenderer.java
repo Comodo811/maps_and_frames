@@ -101,7 +101,7 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
 
                     // Move the map slightly forward and rotate to face front
                     GL11.glTranslatef(-0.5f, 0.5f, 0.03125f);
-                    GL11.glRotatef(180f, 180f, 1f, 0f);
+                    GL11.glRotatef(180f, 180f, 0f, 0f);
 
                     float targetSize = 1.0f;
                     float scale = targetSize / 128f;

@@ -6,11 +6,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.modificationstation.stationapi.api.template.item.TemplateMapItem;
+import net.modificationstation.stationapi.api.template.item.TemplateItem;
 import net.modificationstation.stationapi.api.util.Identifier;
 
 
-public class UnusedMapScale1 extends TemplateMapItem {
+public class UnusedMapScale1 extends TemplateItem {
 
     public UnusedMapScale1(Identifier i)  {
         super(i);
