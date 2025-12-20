@@ -1,5 +1,6 @@
 package io.github.comodo811.mapsandframes.events;
 
+import io.github.comodo811.mapsandframes.events.init.BlockListener;
 import io.github.comodo811.mapsandframes.events.init.ItemListener;
 import net.mine_diver.unsafeevents.listener.EventListener;
 import net.minecraft.item.ItemStack;
@@ -16,7 +17,7 @@ public class CreativeListener {
     public void onTabInit(TabRegistryEvent event) {
         TAB_MAPSANDFRAMES = new SimpleTab(
                 MapsAndFrames.NAMESPACE.id("mapsandframes_tab"),
-                new ItemStack(ItemListener.UNUSED_MAP_SCALE_0)
+                new ItemStack(ItemListener.ITEM_FRAME_ITEM)
         );
 
         event.register(TAB_MAPSANDFRAMES);
@@ -28,5 +29,8 @@ public class CreativeListener {
         TAB_MAPSANDFRAMES.addItem(new ItemStack(ItemListener.UNUSED_MAP_SCALE_3));
         TAB_MAPSANDFRAMES.addItem(new ItemStack(ItemListener.UNUSED_MAP_SCALE_4));
         TAB_MAPSANDFRAMES.addItem(new ItemStack(ItemListener.ITEM_FRAME_ITEM));
+
+        // add blocks
+        TAB_MAPSANDFRAMES.addItem(new ItemStack((BlockListener.CARTOGRAPHY_TABLE)));
     }
 }

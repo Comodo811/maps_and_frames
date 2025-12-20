@@ -17,7 +17,11 @@
     "stationapi:event_bus": [
       "io.github.comodo811.mapsandframes.events.init.InitListener",
       "io.github.comodo811.mapsandframes.events.init.ItemListener",
-      "io.github.comodo811.mapsandframes.events.init.EntityListener"
+      "io.github.comodo811.mapsandframes.events.init.BlockListener",
+      "io.github.comodo811.mapsandframes.events.init.BlockEntityListener",
+      "io.github.comodo811.mapsandframes.events.init.GuiListener",
+      "io.github.comodo811.mapsandframes.events.init.EntityListener",
+      "io.github.comodo811.mapsandframes.events.init.RecipeListener"
     ],
     "stationapi:event_bus_client": [
       "io.github.comodo811.mapsandframes.events.client.TextureListener",
@@ -35,6 +39,6 @@
 
   "depends": {
     "minecraft": "1.0.0-beta.7.3",
-    "stationapi": "*"
+    "stationapi": "2.0.0-alpha.5.3"
   }
 }

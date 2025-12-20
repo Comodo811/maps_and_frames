@@ -5,6 +5,8 @@ item.@.unused_map_scale_3.name=Unused Map Scale 3
 item.@.unused_map_scale_4.name=Unused Map Scale 4
 item.@.item_frame_item.name=Item Frame
 
+tile.@.cartography_table.name=Cartography Table
+
 entity.@.item_frame.name=Item Frame
 
 tab.@.mapsandframes_tab.name=Maps And Frames

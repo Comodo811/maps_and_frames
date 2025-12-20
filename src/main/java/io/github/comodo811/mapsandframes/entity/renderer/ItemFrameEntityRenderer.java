@@ -171,6 +171,7 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
                     Sprite sprite = atlas.getSprite(((CustomAtlasProvider) block).getAtlas().getTexture(blockTexture).getId());
                     atlas.bindTexture();
                     switch (side) {
+                        //need to add logic to fix cartography table displays
                         case 0 -> { //somehow piston top sides are considered bottom sides so this must be fixed
                             if (baseKey.equals("minecraft:piston") || baseKey.equals("minecraft:sticky_piston")) {
                                 renderTop(sprite, frame.facing);
@@ -187,8 +188,8 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
                         }
                         //case 2 -> renderBack(sprite);
                         case 3 -> renderFront(sprite);
-                        case 4 -> renderRightSide(sprite);
-                        case 5 -> renderLeftSide(sprite);
+                        case 4 -> renderLeftSide(sprite); //Changed from R -> L maybe reverse.
+                        case 5 -> renderRightSide(sprite);
                     }
                 }
             }

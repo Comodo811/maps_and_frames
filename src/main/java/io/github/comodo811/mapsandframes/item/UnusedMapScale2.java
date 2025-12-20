@@ -38,7 +38,6 @@ public class UnusedMapScale2 extends TemplateItem {
         if (!world.isRemote) {
             --stack.count;
             //Maybe add Sound
-            System.out.println("Map used");
             ItemStack newMap = createNewMap(world, player);
             player.inventory.addStack(newMap);
         }

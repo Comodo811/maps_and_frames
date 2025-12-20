@@ -1,6 +1,8 @@
 package io.github.comodo811.mapsandframes.events.init;
 
 import io.github.comodo811.mapsandframes.MapsAndFrames;
+import io.github.comodo811.mapsandframes.recipes.MapCopyRecipe;
+import io.github.comodo811.mapsandframes.registry.CartographyRecipes;
 import net.mine_diver.unsafeevents.listener.EventListener;
 import net.modificationstation.stationapi.api.event.mod.InitEvent;
 import net.modificationstation.stationapi.api.mod.entrypoint.EntrypointManager;
@@ -23,5 +25,6 @@ public class InitListener {
     @EventListener
     private static void serverInit(InitEvent event) {
         LOGGER.info(NAMESPACE.toString());
+        CartographyRecipes.register(new MapCopyRecipe());
     }
 }
