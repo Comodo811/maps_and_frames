@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ItemFrameDisplayRegistry {
-    // To display the different sides for the blocks we need to return an array or a list. Otherwise the different
+    // To display the different sides for the blocks we need to return an array or a list. Otherwise, the different
     // variantCases will be overwritten due to them having the same key.
     private static final Map<String, List<ItemFrameDisplays>> BY_KEY = new HashMap<>();
 

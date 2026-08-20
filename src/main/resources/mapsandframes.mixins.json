@@ -4,6 +4,7 @@
   "package": "io.github.comodo811.mapsandframes.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "EntityRegistryMixin"
   ],
   "server": [
   ],

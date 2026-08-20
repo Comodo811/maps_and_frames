@@ -9,6 +9,6 @@ public class BlockEntityListener {
 
     @EventListener
     public void registerBlockEntity(BlockEntityRegisterEvent event) {
-        event.register(BlockEntityCartographyTable.class, String.valueOf(MapsAndFrames.NAMESPACE.id("cartography_table")));
+        event.register(MapsAndFrames.NAMESPACE.id("cartography_table"), BlockEntityCartographyTable.class);
     }
 }

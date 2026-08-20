@@ -8,5 +8,9 @@ item.@.item_frame_item.name=Item Frame
 tile.@.cartography_table.name=Cartography Table
 
 entity.@.item_frame.name=Item Frame
+entity.mapsandframes:item_frame.name=Item Frame
+entity.mapsandframes.item_frame.name=Item Frame
+item.mapsandframes:item_frame_item.name=Item Frame
+item.mapsandframes.item_frame_item.name=Item Frame
 
 tab.@.mapsandframes_tab.name=Maps And Frames

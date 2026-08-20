@@ -33,6 +33,9 @@ import static org.lwjgl.opengl.GL11.glScalef;
 
 @Environment(EnvType.CLIENT)
 public class ItemFrameEntityRenderer extends EntityRenderer {
+    public ItemFrameEntityRenderer() {
+    }
+
     private static NoMapIdRenderer sharedMapRenderer;
     private static int itemFrameDisplayPixelSize = 10;
     public boolean renderItemFlat = true;
@@ -60,6 +63,10 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
 
     @Override
     public void render(Entity entity, double x, double y, double z, float yaw, float tickDelta) {
+        this.renderItemFrame(entity, x, y, z);
+    }
+
+    public void renderItemFrame(Entity entity, double x, double y, double z) {
         boolean renderItemFlat = true;
         if (!(entity instanceof ItemFrameEntity frame)) return;
 
@@ -159,7 +166,9 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
 
             } else {
                 int blockType = blockItemForm.getBlock().getRenderType();
+
                 //Implement support for chest/cacti/slabs/chairs via blocktype
+
                 Item displayItem = ItemRegistry.INSTANCE.get(stack.itemId);
                 Identifier id = ItemRegistry.INSTANCE.getId(displayItem);
                 String baseKey = id.toString().toLowerCase();
@@ -234,11 +243,11 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
     }
 
     private void drawModItem(ItemStack stack, ItemFrameEntity entity) {
-        Tessellator t = Tessellator.INSTANCE;
-
-        t.startQuads();
-        PublicRendererHolder.RENDERER.renderItem(null, stack, ModelTransformation.Mode.GUI, entity.world, entity.getBrightnessAtEyes(1), entity.id + ModelTransformation.Mode.GUI.ordinal());
-        t.draw();
+        Tessellator tessellator = Tessellator.INSTANCE;
+        tessellator.startQuads();
+        GL11.glScalef(-1.0F, 1.0F, -1.0F);
+        PublicRendererHolder.RENDERER.renderItem(null, stack, ModelTransformation.Mode.FIXED, entity.world, entity.getBrightnessAtEyes(1), entity.id + ModelTransformation.Mode.FIXED.ordinal());
+        tessellator.draw();
     }
 
     //Render Blocks
@@ -402,18 +411,6 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
     }
 
     private void draw3DFrame() {
-        /*
-            An Item frame is 12x12 px, 0.5F was used for the paintings but these were 16x16 px
-            For the backside we need vertexes equivalent to 6x6 px, for the background we need 5x5 px, for the outer sides we need
-            1x12 px and for the inner sides we need 1x10 px. The item frame should be 0.5 px in front of the attached block
-            as to avoid z-fighting:
-                1 px = 0.0625F
-                12 px = 0.75F
-                6 px = 0.375F
-                10 px = 0.625F
-                5 px = 0.3125F
-                0.5 px = 0.03125F
-         */
         float halfFullWidth = 0.375F;           // half width for the item frame
         float halfFullHeight = 0.375F;          // half height of the item frame
         float halfBackgroundWidth = 0.3125F;           // half width for the item frame
@@ -443,128 +440,81 @@ public class ItemFrameEntityRenderer extends EntityRenderer {
         maybe need to fix lighting idk if its correct
 
         */
-        Tessellator t = Tessellator.INSTANCE;
+        float outerMin = 0.0F;
+        float outerMax = 1.0F;
+        float innerMin = 1.0F / 12.0F;
+        float innerMax = 11.0F / 12.0F;
+        float sideMinV = 0.0F;
+        float sideMaxV = 1.0F;
+        float innerSideMinV = 1.0F / 12.0F;
+        float innerSideMaxV = 11.0F / 12.0F;
+        float sideMinU = 11.0F / 12.0F;
+        float sideMaxU = 1.0F;
 
-        // -------------------------
-        // Front panel (most outside) needs to be 1.5px in front of block
-        // -------------------------
-        this.bindTexture("/assets/mapsandframes/stationapi/textures/entity/itemframe_front.png");
-        t.startQuads();
-        t.normal(0, 0, -1);
-        t.vertex(-halfFullWidth, -halfFullHeight, (depth-offset), 0, 1);
-        t.vertex( halfFullWidth, -halfFullHeight, (depth-offset), 1, 1);
-        t.vertex( halfFullWidth,  halfFullHeight, (depth-offset), 1, 0);
-        t.vertex(-halfFullWidth,  halfFullHeight, (depth-offset), 0, 0);
-        t.draw();
-
-        // -------------------------
-        // Background needs to be 0.5px in front of block
-        // -------------------------
-        this.bindTexture("/assets/mapsandframes/stationapi/textures/entity/itemframe_background.png");
-        t.startQuads();
-        t.normal(0, 0, -1);
-        t.vertex(-halfBackgroundWidth, -halfBackgroundHeight, -offset, 0, 1);
-        t.vertex( halfBackgroundWidth, -halfBackgroundHeight, -offset, 1, 1);
-        t.vertex( halfBackgroundWidth,  halfBackgroundHeight, -offset, 1, 0);
-        t.vertex(-halfBackgroundWidth,  halfBackgroundHeight, -offset, 0, 0);
-        t.draw();
-
-        // -------------------------
-        //back panel
-        // -------------------------
         this.bindTexture("/assets/mapsandframes/stationapi/textures/entity/itemframe_back.png");
+
+        // Front frame border rendered as four strips from the same atlas so the center stays hollow.
+        drawTexturedQuad(-halfFullWidth, -halfFullHeight, halfFullWidth, -halfInnerHeight, depth - offset, 0, 0, -1, outerMin, outerMax, outerMax, innerMax);
+        drawTexturedQuad(-halfFullWidth, halfInnerHeight, halfFullWidth, halfFullHeight, depth - offset, 0, 0, -1, outerMin, innerMin, outerMax, outerMin);
+        drawTexturedQuad(-halfFullWidth, -halfInnerHeight, -halfInnerWidth, halfInnerHeight, depth - offset, 0, 0, -1, outerMin, innerMax, innerMin, innerMin);
+        drawTexturedQuad(halfInnerWidth, -halfInnerHeight, halfFullWidth, halfInnerHeight, depth - offset, 0, 0, -1, innerMax, innerMax, outerMax, innerMin);
+
+        // Background from the inner 10x10 section.
+        drawTexturedQuad(-halfBackgroundWidth, -halfBackgroundHeight, halfBackgroundWidth, halfBackgroundHeight, -offset, 0, 0, -1, innerMin, innerMax, innerMax, innerMin);
+
+        // Back panel uses the full 12x12 texture.
+        drawTexturedQuadBack(-halfFullWidth, -halfFullHeight, halfFullWidth, halfFullHeight, -offset, 0, 0, 1, outerMin, outerMax, outerMax, outerMin);
+
+        // Outer wooden frame sides from the last texture column across the full 12px height.
+        drawTexturedQuad(-halfFullWidth, halfFullHeight, halfFullWidth, halfFullHeight, depth - offset, 0, 1, 0, sideMaxV, sideMaxU, sideMinV, sideMinU, true); // top
+        drawTexturedQuad(-halfFullWidth, -halfFullHeight, halfFullWidth, -halfFullHeight, -(depth - offset), 0, -1, 0, sideMaxV, sideMinU, sideMinV, sideMaxU, true); // bottom
+        drawTexturedQuad(-halfFullWidth, -halfFullHeight, -halfFullWidth, halfFullHeight, depth - offset, -1, 0, 0, sideMaxV, sideMinU, sideMinV, sideMaxU, false); // left
+        drawTexturedQuad(halfFullWidth, -halfFullHeight, halfFullWidth, halfFullHeight, -(depth - offset), 1, 0, 0, sideMaxV, sideMinU, sideMinV, sideMaxU, false); // right
+
+        // Inner wooden frame sides from the last column without the top/bottom pixels.
+        drawTexturedQuad(-halfInnerWidth, halfInnerHeight, halfInnerWidth, halfInnerHeight, -(depth - offset), 0, 1, 0, innerSideMaxV, sideMaxU, innerSideMinV, sideMinU, true); // top
+        drawTexturedQuad(-halfInnerWidth, -halfInnerHeight, halfInnerWidth, -halfInnerHeight, depth - offset, 0, -1, 0, innerSideMaxV, sideMinU, innerSideMinV, sideMaxU, true); // bottom
+        drawTexturedQuad(-halfInnerWidth, -halfInnerHeight, -halfInnerWidth, halfInnerHeight, -(depth - offset), -1, 0, 0, innerSideMaxV, sideMinU, innerSideMinV, sideMaxU, false); // left
+        drawTexturedQuad(halfInnerWidth, -halfInnerHeight, halfInnerWidth, halfInnerHeight, depth - offset, 1, 0, 0, innerSideMaxV, sideMinU, innerSideMinV, sideMaxU, false); // right
+    }
+
+    private void drawTexturedQuad(float minX, float minY, float maxX, float maxY, float z, int normalX, int normalY, int normalZ, float minU, float maxV, float maxU, float minV) {
+        Tessellator t = Tessellator.INSTANCE;
         t.startQuads();
-        t.normal(0, 0, 1);
-        t.vertex(-halfFullWidth, -halfFullHeight, -offset, 1, 1);
-        t.vertex(-halfFullWidth,  halfFullHeight, -offset, 1, 0);
-        t.vertex( halfFullWidth,  halfFullHeight, -offset, 0, 0);
-        t.vertex( halfFullWidth, -halfFullHeight, -offset, 0, 1);
+        t.normal(normalX, normalY, normalZ);
+        t.vertex(minX, minY, z, minU, maxV);
+        t.vertex(maxX, minY, z, maxU, maxV);
+        t.vertex(maxX, maxY, z, maxU, minV);
+        t.vertex(minX, maxY, z, minU, minV);
         t.draw();
+    }
 
-        // -------------------------
-        // Outer Wooden frame sides
-        // -------------------------
-        this.bindTexture("/assets/mapsandframes/stationapi/textures/entity/itemframe_outer_side.png");
-
-        // Top facing border
+    private void drawTexturedQuadBack(float minX, float minY, float maxX, float maxY, float z, int normalX, int normalY, int normalZ, float minU, float maxV, float maxU, float minV) {
+        Tessellator t = Tessellator.INSTANCE;
         t.startQuads();
-        t.normal(0, 1, 0);
-        t.vertex(-halfFullWidth,  halfFullHeight,  (depth-offset), 1, 1);
-        t.vertex( halfFullWidth,  halfFullHeight,  (depth-offset), 0, 1);
-        t.vertex( halfFullWidth,  halfFullHeight, -(depth-offset), 0, 0);
-        t.vertex(-halfFullWidth,  halfFullHeight, -(depth-offset), 1, 0);
+        t.normal(normalX, normalY, normalZ);
+        t.vertex(minX, minY, z, maxU, maxV);
+        t.vertex(minX, maxY, z, maxU, minV);
+        t.vertex(maxX, maxY, z, minU, minV);
+        t.vertex(maxX, minY, z, minU, maxV);
         t.draw();
+    }
 
-        // Bottom facing border
+    private void drawTexturedQuad(float minX, float minY, float maxX, float maxY, float z, int normalX, int normalY, int normalZ, float minU, float maxV, float maxU, float minV, boolean horizontalFace) {
+        Tessellator t = Tessellator.INSTANCE;
         t.startQuads();
-        t.normal(0, -1, 0);
-        t.vertex(-halfFullWidth, -halfFullHeight, -(depth-offset), 1, 0);
-        t.vertex( halfFullWidth, -halfFullHeight, -(depth-offset), 0, 0);
-        t.vertex( halfFullWidth, -halfFullHeight,  (depth-offset), 0, 1);
-        t.vertex(-halfFullWidth, -halfFullHeight,  (depth-offset), 1, 1);
-        t.draw();
-
-        // Left facing border
-        t.startQuads();
-        t.normal(-1, 0, 0);
-        t.vertex(-halfFullWidth, -halfFullHeight,  (depth-offset), 1, 0);
-        t.vertex(-halfFullWidth,  halfFullHeight,  (depth-offset), 0, 0);
-        t.vertex(-halfFullWidth,  halfFullHeight, -(depth-offset), 0, 1);
-        t.vertex(-halfFullWidth, -halfFullHeight, -(depth-offset), 1, 1);
-        t.draw();
-
-        // Right facing border
-        t.startQuads();
-        t.normal(1, 0, 0);
-        t.vertex(halfFullWidth, -halfFullHeight, -(depth-offset), 1, 0);
-        t.vertex(halfFullWidth,  halfFullHeight, -(depth-offset), 0, 0);
-        t.vertex(halfFullWidth,  halfFullHeight,  (depth-offset), 0, 1);
-        t.vertex(halfFullWidth, -halfFullHeight,  (depth-offset), 1, 1);
-        t.draw();
-
-
-        // -------------------------
-        // Inner Wooden frame sides
-        // -------------------------
-        this.bindTexture("/assets/mapsandframes/stationapi/textures/entity/itemframe_inner_side.png");
-
-        // Bottom facing border
-        t.startQuads();
-        t.normal(0, 1, 0);
-        t.vertex(-halfInnerWidth,  halfInnerHeight, -(depth-offset), 1, 1);
-        t.vertex( halfInnerWidth,  halfInnerHeight, -(depth-offset), 0, 1);
-        t.vertex( halfInnerWidth,  halfInnerHeight,  (depth-offset), 0, 0);
-        t.vertex(-halfInnerWidth,  halfInnerHeight,  (depth-offset), 1, 0);
-        t.draw();
-
-
-
-        //  Top facing border
-        t.startQuads();
-        t.normal(0, -1, 0);
-        t.vertex(-halfInnerWidth, -halfInnerHeight,  (depth-offset), 1, 0);
-        t.vertex( halfInnerWidth, -halfInnerHeight,  (depth-offset), 0, 0);
-        t.vertex( halfInnerWidth, -halfInnerHeight, -(depth-offset), 0, 1);
-        t.vertex(-halfInnerWidth, -halfInnerHeight, -(depth-offset), 1, 1);
-        t.draw();
-
-
-        // Right facing border
-        t.startQuads();
-        t.normal(-1, 0, 0);
-        t.vertex(-halfInnerWidth, -halfInnerHeight, -(depth-offset), 1, 0);
-        t.vertex(-halfInnerWidth,  halfInnerHeight, -(depth-offset), 0, 0);
-        t.vertex(-halfInnerWidth,  halfInnerHeight,  (depth-offset), 0, 1);
-        t.vertex(-halfInnerWidth, -halfInnerHeight,  (depth-offset), 1, 1);
-        t.draw();
-
-        // Left facing border
-        t.startQuads();
-        t.normal(1, 0, 0);
-        t.vertex(halfInnerWidth, -halfInnerHeight,  (depth-offset), 1, 0);
-        t.vertex(halfInnerWidth,  halfInnerHeight,  (depth-offset), 0, 0);
-        t.vertex(halfInnerWidth,  halfInnerHeight, -(depth-offset), 0, 1);
-        t.vertex(halfInnerWidth, -halfInnerHeight, -(depth-offset), 1, 1);
+        t.normal(normalX, normalY, normalZ);
+        if (horizontalFace) {
+            t.vertex(minX, minY, z, maxU, maxV);
+            t.vertex(maxX, maxY, z, minU, maxV);
+            t.vertex(maxX, maxY, -z, minU, minV);
+            t.vertex(minX, minY, -z, maxU, minV);
+        } else {
+            t.vertex(minX, minY, z, maxU, minV);
+            t.vertex(maxX, maxY, z, minU, minV);
+            t.vertex(maxX, maxY, -z, minU, maxV);
+            t.vertex(minX, minY, -z, maxU, maxV);
+        }
         t.draw();
     }
 }
